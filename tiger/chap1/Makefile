@@ -8,4 +8,4 @@ clean:
 
 _build:
 	mkdir -p target/classes
-	javac -d target/classes interp.java prog.java slp.java
+	javac -d target/classes src/main/java/*.java
