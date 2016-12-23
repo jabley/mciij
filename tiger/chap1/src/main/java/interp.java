@@ -1,19 +1,7 @@
 class interp {
 
-  static void print(int value) {
-    System.out.println(value);
-  }
-
   static void interp(Stm s) {
-    interpStm(s, null);
-  }
-
-  static Table interpStm(Stm s, Table t) {
-    return s.eval(t);
-  }
-
-  static IntAndTable interpExp(Exp e, Table t) {
-    return e.eval(t);
+    s.eval(null);
   }
 
   public static void main(String args[]) throws java.io.IOException {

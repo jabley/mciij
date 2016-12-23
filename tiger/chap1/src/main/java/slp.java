@@ -11,8 +11,8 @@ class CompoundStm extends Stm {
      stm2=s2;
    }
    Table eval(Table t) {
-     Table first = interp.interpStm(stm1, t);
-     return interp.interpStm(stm2, first);
+     Table first = stm1.eval(t);
+     return stm2.eval(first);
    }
    int maxargs() {
      return Math.max(stm1.maxargs(), stm2.maxargs());
@@ -27,7 +27,7 @@ class AssignStm extends Stm {
      exp=e;
    }
    Table eval(Table t) {
-     return new Table(id, interp.interpExp(exp, t).i, t);
+     return new Table(id, exp.eval( t).i, t);
    }
    int maxargs() {
      return exp.maxargs();
@@ -88,8 +88,8 @@ class OpExp extends Exp {
      right=r;
    }
    IntAndTable eval(Table t) {
-     int leftVal = interp.interpExp(left, t).i;
-     int rightVal = interp.interpExp(right, t).i;
+     int leftVal = left.eval(t).i;
+     int rightVal = right.eval(t).i;
      switch (oper) {
        case OpExp.Plus:
          return new IntAndTable(leftVal + rightVal, t);
@@ -117,8 +117,8 @@ class EseqExp extends Exp {
      exp=e;
    }
    IntAndTable eval(Table t) {
-     Table newTable = interp.interpStm(stm, t);
-     return interp.interpExp(exp, newTable);
+     Table newTable = stm.eval(t);
+     return exp.eval(newTable);
    }
    @Override
    int maxargs() {
@@ -130,6 +130,10 @@ abstract class ExpList {
   abstract Table printAndEval(Table t);
   abstract int numargs();
   abstract int maxargs();
+
+  void print(int value) {
+    System.out.println(value);
+  }
 }
 
 class PairExpList extends ExpList {
@@ -140,8 +144,8 @@ class PairExpList extends ExpList {
      tail=t;
    }
    Table printAndEval(Table t) {
-     IntAndTable res = interp.interpExp(head, t);
-     interp.print(res.i);
+     IntAndTable res = head.eval(t);
+     print(res.i);
      return tail.printAndEval(res.t);
    }
    int numargs() {
@@ -158,8 +162,8 @@ class LastExpList extends ExpList {
      head=h;
    }
    Table printAndEval(Table t) {
-     IntAndTable res = interp.interpExp(head, t);
-     interp.print(res.i);
+     IntAndTable res = head.eval(t);
+     print(res.i);
      return res.t;
    }
    int numargs() {
