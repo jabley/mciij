@@ -1,5 +1,6 @@
 abstract class Stm {
   abstract Table eval(Table t);
+  abstract int maxargs();
 }
 
 class CompoundStm extends Stm {
@@ -13,6 +14,9 @@ class CompoundStm extends Stm {
      Table first = interp.interpStm(stm1, t);
      return interp.interpStm(stm2, first);
    }
+   int maxargs() {
+     return Math.max(stm1.maxargs(), stm2.maxargs());
+   }
 }
 
 class AssignStm extends Stm {
@@ -25,6 +29,9 @@ class AssignStm extends Stm {
    Table eval(Table t) {
      return new Table(id, interp.interpExp(exp, t).i, t);
    }
+   int maxargs() {
+     return exp.maxargs();
+   }
 }
 
 class PrintStm extends Stm {
@@ -35,10 +42,16 @@ class PrintStm extends Stm {
    Table eval(Table t) {
      return exps.printAndEval(t);
    }
+   int maxargs() {
+     return Math.max(exps.numargs(), exps.maxargs());
+   }
 }
 
 abstract class Exp {
   abstract IntAndTable eval(Table t);
+  int maxargs() {
+    return 0;
+  }
 }
 
 class IdExp extends Exp {
@@ -90,6 +103,10 @@ class OpExp extends Exp {
        throw new IllegalArgumentException("Unknown operation: " + oper);
      }
    }
+   @Override
+   int maxargs() {
+     return Math.max(left.maxargs(), right.maxargs());
+   }
 }
 
 class EseqExp extends Exp {
@@ -103,10 +120,16 @@ class EseqExp extends Exp {
      Table newTable = interp.interpStm(stm, t);
      return interp.interpExp(exp, newTable);
    }
+   @Override
+   int maxargs() {
+     return stm.maxargs();
+   }
 }
 
 abstract class ExpList {
   abstract Table printAndEval(Table t);
+  abstract int numargs();
+  abstract int maxargs();
 }
 
 class PairExpList extends ExpList {
@@ -121,6 +144,12 @@ class PairExpList extends ExpList {
      interp.print(res.i);
      return tail.printAndEval(res.t);
    }
+   int numargs() {
+     return 1 + tail.numargs();
+   }
+   int maxargs() {
+     return Math.max(head.maxargs(), tail.maxargs());
+   }
 }
 
 class LastExpList extends ExpList {
@@ -132,5 +161,11 @@ class LastExpList extends ExpList {
      IntAndTable res = interp.interpExp(head, t);
      interp.print(res.i);
      return res.t;
+   }
+   int numargs() {
+     return 1;
+   }
+   int maxargs() {
+     return head.maxargs();
    }
 }
