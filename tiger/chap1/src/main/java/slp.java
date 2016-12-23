@@ -1,4 +1,6 @@
-abstract class Stm {}
+abstract class Stm {
+  abstract Table eval(Table t);
+}
 
 class CompoundStm extends Stm {
    Stm stm1;
@@ -6,6 +8,10 @@ class CompoundStm extends Stm {
    CompoundStm(Stm s1, Stm s2) {
      stm1=s1;
      stm2=s2;
+   }
+   Table eval(Table t) {
+     Table first = interp.interpStm(stm1, t);
+     return interp.interpStm(stm2, first);
    }
 }
 
@@ -16,6 +22,9 @@ class AssignStm extends Stm {
      id=i;
      exp=e;
    }
+   Table eval(Table t) {
+     return new Table(id, interp.interpExp(exp, t).i, t);
+   }
 }
 
 class PrintStm extends Stm {
@@ -23,14 +32,25 @@ class PrintStm extends Stm {
    PrintStm(ExpList e) {
      exps=e;
    }
+   Table eval(Table t) {
+     return exps.printAndEval(t);
+   }
 }
 
-abstract class Exp {}
+abstract class Exp {
+  abstract IntAndTable eval(Table t);
+}
 
 class IdExp extends Exp {
    String id;
    IdExp(String i) {
      id=i;
+   }
+   IntAndTable eval(Table t) {
+     if (t == null) {
+       throw new IllegalStateException("Variable " + id + " not found in table");
+     }
+     return new IntAndTable(t.lookup(id), t);
    }
 }
 
@@ -38,6 +58,9 @@ class NumExp extends Exp {
    int num;
    NumExp(int n) {
      num=n;
+   }
+   IntAndTable eval(Table t) {
+     return new IntAndTable(num, t);
    }
 }
 
@@ -51,6 +74,22 @@ class OpExp extends Exp {
      oper=o;
      right=r;
    }
+   IntAndTable eval(Table t) {
+     int leftVal = interp.interpExp(left, t).i;
+     int rightVal = interp.interpExp(right, t).i;
+     switch (oper) {
+       case OpExp.Plus:
+         return new IntAndTable(leftVal + rightVal, t);
+       case OpExp.Minus:
+         return new IntAndTable(leftVal - rightVal, t);
+       case OpExp.Times:
+         return new IntAndTable(leftVal * rightVal, t);
+       case OpExp.Div:
+         return new IntAndTable(leftVal / rightVal, t);
+       default:
+       throw new IllegalArgumentException("Unknown operation: " + oper);
+     }
+   }
 }
 
 class EseqExp extends Exp {
@@ -60,9 +99,15 @@ class EseqExp extends Exp {
      stm=s;
      exp=e;
    }
+   IntAndTable eval(Table t) {
+     Table newTable = interp.interpStm(stm, t);
+     return interp.interpExp(exp, newTable);
+   }
 }
 
-abstract class ExpList {}
+abstract class ExpList {
+  abstract Table printAndEval(Table t);
+}
 
 class PairExpList extends ExpList {
    Exp head;
@@ -71,11 +116,21 @@ class PairExpList extends ExpList {
      head=h;
      tail=t;
    }
+   Table printAndEval(Table t) {
+     IntAndTable res = interp.interpExp(head, t);
+     interp.print(res.i);
+     return tail.printAndEval(res.t);
+   }
 }
 
 class LastExpList extends ExpList {
    Exp head;
    public LastExpList(Exp h) {
      head=h;
+   }
+   Table printAndEval(Table t) {
+     IntAndTable res = interp.interpExp(head, t);
+     interp.print(res.i);
+     return res.t;
    }
 }

@@ -1,6 +1,6 @@
 class interp {
 
-  private static void print(int value) {
+  static void print(int value) {
     System.out.println(value);
   }
 
@@ -9,65 +9,11 @@ class interp {
   }
 
   static Table interpStm(Stm s, Table t) {
-    if (s instanceof PrintStm) {
-      PrintStm ps = (PrintStm) s;
-      return interpExpList(ps.exps, t);
-    } else if (s instanceof CompoundStm) {
-      CompoundStm cs = (CompoundStm) s;
-      Table first = interpStm(cs.stm1, t);
-      return interpStm(cs.stm2, first);
-    } else if (s instanceof AssignStm) {
-      AssignStm as = (AssignStm) s;
-      return new Table(as.id, interpExp(as.exp, t).i, t);
-    }
-    return null;
-  }
-
-  static Table interpExpList(ExpList exps, Table t) {
-    if (exps instanceof LastExpList) {
-      LastExpList lel = (LastExpList) exps;
-      IntAndTable res = interpExp(lel.head, t);
-      print(res.i);
-      return res.t;
-    } else {
-      PairExpList pel = (PairExpList) exps;
-      IntAndTable res = interpExp(pel.head, t);
-      print(res.i);
-      return interpExpList(pel.tail, res.t);
-    }
+    return s.eval(t);
   }
 
   static IntAndTable interpExp(Exp e, Table t) {
-    if (e instanceof IdExp) {
-      IdExp id = (IdExp) e;
-      if (t == null) {
-        throw new IllegalStateException("Variable " + id.id + " not found in table");
-      }
-      return new IntAndTable(t.lookup(id.id), t);
-    } else if (e instanceof NumExp) {
-      return new IntAndTable(((NumExp) e).num, t);
-    } else if (e instanceof OpExp) {
-      OpExp oe = (OpExp) e;
-      int left = interpExp(oe.left, t).i;
-      int right = interpExp(oe.right, t).i;
-      switch (oe.oper) {
-        case OpExp.Plus:
-          return new IntAndTable(left + right, t);
-        case OpExp.Minus:
-          return new IntAndTable(left - right, t);
-        case OpExp.Times:
-          return new IntAndTable(left * right, t);
-        case OpExp.Div:
-          return new IntAndTable(left / right, t);
-        default:
-        throw new IllegalArgumentException("Unknown operation: " + oe.oper);
-      }
-    } else if (e instanceof EseqExp) {
-      EseqExp se = (EseqExp) e;
-      Table newTable = interpStm(se.stm, t);
-      return interpExp(se.exp, newTable);
-    }
-    return null;
+    return e.eval(t);
   }
 
   private static int numargs(ExpList exps) {
