@@ -1,7 +1,10 @@
 .PHONY: test clean
 
 test: _build
+	echo "Interpreting"
 	java -cp target/classes interp
+	echo "Exercise 1.1:"
+	java -cp target/classes Tree
 
 clean:
 	rm -rf target

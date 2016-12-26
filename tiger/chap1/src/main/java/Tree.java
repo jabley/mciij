@@ -20,4 +20,28 @@ public class Tree {
       return new Tree(t.left, key, t.right);
     }
   }
+
+  static boolean member(String key, Tree t) {
+    if (t == null) {
+      return false;
+    }
+    if (key.equals(t.key)) {
+      return true;
+    }
+    if (key.compareTo(t.key) < 0) {
+      return member(key, t.left);
+    } else if (key.compareTo(t.key) > 0) {
+      return member(key, t.right);
+    }
+    throw new IllegalStateException("Not sure how to compare the key");
+  }
+
+  public static void main(String[] args) {
+    Tree tree1 = insert("a", null);
+    Tree tree2 = insert("b", tree1);
+    System.out.println(member("c", tree2));
+    System.out.println(member("b", tree2));
+    System.out.println(member("b", tree1));
+  }
+
 }
