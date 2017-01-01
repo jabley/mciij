@@ -1,28 +1,98 @@
 import java.util.Arrays;
 
 public class Tree {
+  enum Color { RED, BLACK }
+  private Color color;
   Tree left;
   String key;
   Tree right;
   Object binding;
 
-  Tree(Tree left, String key, Object binding, Tree right) {
-    this.left = left;
+  Tree(Color color, String key, Object binding, Tree left, Tree right) {
+    this.color = color;
     this.key = key;
-    this.right = right;
     this.binding = binding;
+    this.left = left;
+    this.right = right;
   }
 
   static Tree insert(String key, Object binding, Tree t) {
+    return makeBlack(insert1(key, binding, t));
+  }
+
+  private static Tree insert1(String key, Object binding, Tree t) {
     if (t == null) {
-      return new Tree(null, key, binding, null);
-    } else if (key.compareTo(t.key) < 0) {
-      return new Tree(insert(key, binding, t.left), t.key, t.binding, t.right);
-    } else if (key.compareTo(t.key) > 0) {
-      return new Tree(t.left, t.key, t.binding, insert(key, binding, t.right));
-    }  else {
-      return new Tree(t.left, key, binding, t.right);
+      return newRedTree(key, binding, null, null);
     }
+
+    int comparison = key.compareTo(t.key);
+    if (comparison < 0) {
+      return lbalance(isBlackTree(t), t.key, t.binding, insert1(key, binding, t.left), t.right);
+    } else if (comparison > 0) {
+      return rbalance(isBlackTree(t), t.key, t.binding, t.left, insert1(key, binding, t.right));
+    } else {
+      return makeTree(isBlackTree(t), key, binding, t.left, t.right);
+    }
+  }
+
+  private static Tree newRedTree(String key, Object binding, Tree left, Tree right) {
+    return new Tree(Color.RED, key, binding, left, right);
+  }
+
+  private static Tree newBlackTree(String key, Object binding, Tree left, Tree right) {
+    return new Tree(Color.BLACK, key, binding, left, right);
+  }
+
+  private static Tree lbalance(boolean isBlack, String key, Object binding, Tree left, Tree right) {
+    if (isRedTree(left) && isRedTree(left.left)) {
+      return newRedTree(
+        left.key, left.binding,
+        newBlackTree(left.left.key, left.left.binding, left.left.left, left.left.right),
+        newBlackTree(key, binding, left.right, right)
+      );
+    } else if (isRedTree(left) && isRedTree(left.right)) {
+      return newRedTree(
+        left.right.key, left.right.binding,
+        newBlackTree(left.key, left.binding, left.left, left.right.left),
+        newBlackTree( key, binding, left.right.right, right)
+      );
+    } else {
+      return makeTree(isBlack, key, binding, left, right);
+    }
+  }
+
+  private static Tree makeTree(boolean isBlack, String key, Object binding, Tree left, Tree right) {
+    return isBlack ? newBlackTree(key, binding, left, right) : newRedTree(key, binding, left, right);
+  }
+
+  private static Tree rbalance(boolean isBlack, String key, Object binding,  Tree left, Tree right) {
+    if (isRedTree(right) && isRedTree(right.left)) {
+      return newRedTree(
+        right.left.key, right.left.binding,
+        newBlackTree(key, binding, left, right.left.left),
+        newBlackTree(right.key, right.binding, right.left.right, right.right)
+      );
+    } else if (isRedTree(right) && isRedTree(right.right)) {
+      return newRedTree(
+        right.key, right.binding,
+        newBlackTree(key, binding, left, right.left),
+        newBlackTree(right.right.key, right.right.binding, right.right.left, right.right.right)
+      );
+    } else {
+      return makeTree(isBlack, key, binding, left, right);
+    }
+  }
+
+  private static boolean isRedTree(Tree t) {
+    return t != null && t.color == Color.RED;
+  }
+
+  private static boolean isBlackTree(Tree t) {
+    return t != null && t.color == Color.BLACK;
+  }
+
+  static Tree makeBlack(Tree t) {
+    return isBlackTree(t) ? t : newBlackTree(t.key, t.binding, t.left, t.right);
   }
 
   static Object lookup(String key, Tree t) {
@@ -97,8 +167,8 @@ public class Tree {
     System.out.println(String.format("Value of a in Tree2? expected:    1, actual: %4s", lookup("a", tree2)));
     System.out.println(String.format("Value of b in Tree1? expected: null, actual: %4s", lookup("b", tree1)));
     System.out.println();
-    System.out.println(String.format("Height of tspipfbst: expected: 6; actual: %s", height(treeFromString("tspipfbst"))));
-    System.out.println(String.format("Height of abcdefghi: expected: 9; actual: %s", height(treeFromString("abcdefghi"))));
+    System.out.println(String.format("Height of tspipfbst: expected: 4; actual: %s", height(treeFromString("tspipfbst"))));
+    System.out.println(String.format("Height of abcdefghi: expected: 4; actual: %s", height(treeFromString("abcdefghi"))));
   }
 
 }
