@@ -90,18 +90,18 @@ public class Tree {
   public static void main(String[] args) {
     Tree tree1 = insert("a", 1, null);
     Tree tree2 = insert("b", 2, tree1);
-    System.out.println(String.format("c is in Tree2? %b", member("c", tree2)));
-    System.out.println(String.format("b is in Tree2? %b", member("b", tree2)));
-    System.out.println(String.format("a is in Tree2? %b", member("a", tree2)));
-    System.out.println(String.format("b is in Tree1? %b", member("b", tree1)));
+    System.out.println(String.format("c is in Tree2? expected: false, actual: %5b", member("c", tree2)));
+    System.out.println(String.format("b is in Tree2? expected:  true, actual: %5b", member("b", tree2)));
+    System.out.println(String.format("a is in Tree2? expected:  true, actual: %5b", member("a", tree2)));
+    System.out.println(String.format("b is in Tree1? expected: false, actual: %5b", member("b", tree1)));
     System.out.println();
-    System.out.println(String.format("Value of c in Tree2? %s", lookup("c", tree2)));
-    System.out.println(String.format("Value of b in Tree2? %s", lookup("b", tree2)));
-    System.out.println(String.format("Value of a in Tree2? %s", lookup("a", tree2)));
-    System.out.println(String.format("Value of b in Tree1? %s", lookup("b", tree1)));
+    System.out.println(String.format("Value of c in Tree2? expected: null, actual: %4s", lookup("c", tree2)));
+    System.out.println(String.format("Value of b in Tree2? expected:    2, actual: %4s", lookup("b", tree2)));
+    System.out.println(String.format("Value of a in Tree2? expected:    1, actual: %4s", lookup("a", tree2)));
+    System.out.println(String.format("Value of b in Tree1? expected: null, actual: %4s", lookup("b", tree1)));
     System.out.println();
-    System.out.println(String.format("Height of tspipfbst: %s", height(treeFromString("tspipfbst"))));
-    System.out.println(String.format("Height of abcdefghi: %s", height(treeFromString("abcdefghi"))));
+    System.out.println(String.format("Height of tspipfbst: expected: 6; actual: %s", height(treeFromString("tspipfbst"))));
+    System.out.println(String.format("Height of abcdefghi: expected: 9; actual: %s", height(treeFromString("abcdefghi"))));
   }
 
 }
