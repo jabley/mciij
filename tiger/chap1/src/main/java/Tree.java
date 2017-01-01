@@ -29,30 +29,27 @@ public class Tree {
     if (t == null) {
       return null;
     }
-    if (key.equals(t.key)) {
+    int comparison = key.compareTo(t.key);
+    if (comparison < 0) {
+      return lookup(key, t.left);
+    } else if (comparison > 0) {
+      return lookup(key, t.right);
+    } else {
       return t.binding;
     }
-    if (key.compareTo(t.key) < 0) {
-      return lookup(key, t.left);
-    } else if (key.compareTo(t.key) > 0) {
-      return lookup(key, t.right);
-    }
-    throw new IllegalStateException("Not sure how to retrieve the binding for key");
   }
 
   static boolean member(String key, Tree t) {
     if (t == null) {
       return false;
     }
-    if (key.equals(t.key)) {
-      return true;
-    }
-    if (key.compareTo(t.key) < 0) {
+    int comparison = key.compareTo(t.key);
+    if (comparison < 0) {
       return member(key, t.left);
-    } else if (key.compareTo(t.key) > 0) {
+    } else if (comparison > 0) {
       return member(key, t.right);
     }
-    throw new IllegalStateException("Not sure how to compare the key");
+    return true;
   }
 
   static Tree treeFromString(String input) {
