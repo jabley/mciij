@@ -1,19 +1,26 @@
 import java.util.Arrays;
 
-public class Tree {
+/**
+ * Persistent red-black tree implementation, originally for use as a symbol table.
+ *
+ * @param <K>
+ * @param <V>
+ */
+public class Tree<K extends Comparable<K>, V> {
     enum Color {RED, BLACK}
 
-    private Color color;
-    Tree left;
-    String key;
-    Tree right;
-    Object binding;
+    private final Color color;
+    private final K key;
+    private final V binding;
+    private final Tree<K, V> left;
+    private final Tree<K, V> right;
 
-    public Tree(String key, Object binding) {
+    @SuppressWarnings("unchecked")
+    public Tree(K key, V binding) {
         this(Color.BLACK, key, binding, EMPTY_TREE, EMPTY_TREE);
     }
 
-    protected Tree(Color color, String key, Object binding, Tree left, Tree right) {
+    protected Tree(Color color, K key, V binding, Tree<K, V> left, Tree<K ,V> right) {
         this.color = color;
         this.key = key;
         this.binding = binding;
@@ -21,51 +28,62 @@ public class Tree {
         this.right = right;
     }
 
-    private static final Tree EMPTY_TREE = new Tree(Color.RED, null, null, null, null) {
+    private static final Tree EMPTY_TREE = new Tree<String, Object>(Color.RED, null, null, null, null) {
+        @Override
         public int height() {
             return 0;
         }
 
+        @Override
         public boolean member(String key) {
             return false;
         }
 
+        @Override
         public Object lookup(String key) {
             return null;
         }
 
-        protected Tree insert1(String key, Object binding) {
+        @Override
+        @SuppressWarnings("unchecked")
+        protected Tree insertInternal(String key, Object binding) {
             return newRedTree(key, binding, this, this);
         }
     };
 
-    public Tree insert(String key, Object binding) {
+    /**
+     * Adds a new entry to this table, and returns a new Tree.
+     * @param key a non-null key for this entry
+     * @param binding a value for this entry
+     * @return a new non-null Tree<K, V>
+     */
+    public Tree<K, V> insert(K key, V binding) {
         if (key == null) {
             throw new IllegalArgumentException("key == null");
         }
-        return makeBlack(insert1(key, binding));
+        return makeBlack(insertInternal(key, binding));
     }
 
-    protected Tree insert1(String key, Object binding) {
+    protected Tree<K, V> insertInternal(K key, V binding) {
         int comparison = key.compareTo(this.key);
         if (comparison < 0) {
-            return lbalance(isBlackTree(this), this.key, this.binding, this.left.insert1(key, binding), this.right);
+            return lbalance(isBlackTree(this), this.key, this.binding, this.left.insertInternal(key, binding), this.right);
         } else if (comparison > 0) {
-            return rbalance(isBlackTree(this), this.key, this.binding, this.left, this.right.insert1(key, binding));
+            return rbalance(isBlackTree(this), this.key, this.binding, this.left, this.right.insertInternal(key, binding));
         } else {
             return makeTree(isBlackTree(this), key, binding, this.left, this.right);
         }
     }
 
-    protected Tree newRedTree(String key, Object binding, Tree left, Tree right) {
-        return new Tree(Color.RED, key, binding, left, right);
+    protected Tree<K, V> newRedTree(K key, V binding, Tree<K, V> left, Tree<K, V> right) {
+        return new Tree<K, V>(Color.RED, key, binding, left, right);
     }
 
-    private Tree newBlackTree(String key, Object binding, Tree left, Tree right) {
-        return new Tree(Color.BLACK, key, binding, left, right);
+    private Tree<K, V> newBlackTree(K key, V binding, Tree<K, V> left, Tree<K, V> right) {
+        return new Tree<K ,V>(Color.BLACK, key, binding, left, right);
     }
 
-    private Tree lbalance(boolean isBlack, String key, Object binding, Tree l, Tree r) {
+    private Tree<K ,V> lbalance(boolean isBlack, K key, V binding, Tree<K, V> l, Tree<K, V> r) {
         if (isRedTree(l) && isRedTree(l.left)) {
             return newRedTree(
                     l.key, l.binding,
@@ -83,11 +101,11 @@ public class Tree {
         }
     }
 
-    private Tree makeTree(boolean isBlack, String key, Object binding, Tree left, Tree right) {
+    private Tree<K ,V> makeTree(boolean isBlack, K key, V binding, Tree<K, V> left, Tree<K, V> right) {
         return isBlack ? newBlackTree(key, binding, left, right) : newRedTree(key, binding, left, right);
     }
 
-    private Tree rbalance(boolean isBlack, String key, Object binding, Tree l, Tree r) {
+    private Tree<K ,V> rbalance(boolean isBlack, K key, V binding, Tree<K, V> l, Tree<K, V> r) {
         if (isRedTree(r) && isRedTree(r.left)) {
             return newRedTree(
                     r.left.key, r.left.binding,
@@ -105,19 +123,29 @@ public class Tree {
         }
     }
 
-    private boolean isRedTree(Tree t) {
+    private boolean isRedTree(Tree<K, V> t) {
         return t != EMPTY_TREE && t.color == Color.RED;
     }
 
-    private boolean isBlackTree(Tree t) {
+    private boolean isBlackTree(Tree<K, V> t) {
         return t != EMPTY_TREE && t.color == Color.BLACK;
     }
 
-    private Tree makeBlack(Tree t) {
+    private Tree<K, V> makeBlack(Tree<K, V> t) {
         return isBlackTree(t) ? t : newBlackTree(t.key, t.binding, t.left, t.right);
     }
 
-    public Object lookup(String key) {
+    /**
+     * Returns the value stored for the specified key, or null if there isn't one. If you wish to check whether the key
+     * exists within the Tree, use the {@member(K} method.
+     *
+     * @param key a non-null key
+     * @return the stored value (which may be null), or null
+     */
+    public V lookup(K key) {
+        if (key == null) {
+            throw new IllegalArgumentException("key == null");
+        }
         int comparison = key.compareTo(this.key);
         if (comparison < 0) {
             return this.left.lookup(key);
@@ -127,7 +155,16 @@ public class Tree {
         return this.binding;
     }
 
-    public boolean member(String key) {
+    /**
+     * Returns true if this key exists within the Tree, otherwise false.
+     *
+     * @param key a non-null key
+     * @return a boolean
+     */
+    public boolean member(K key) {
+        if (key == null) {
+            throw new IllegalArgumentException("key == null");
+        }
         int comparison = key.compareTo(this.key);
         if (comparison < 0) {
             return this.left.member(key);
@@ -137,23 +174,24 @@ public class Tree {
         return true;
     }
 
-    static Tree treeFromString(String input) {
+    private static Tree<String, Integer> treeFromString(String input) {
         if (input == null) {
             throw new IllegalArgumentException("input == null");
         }
         return treeFromChars(input.toCharArray());
     }
 
-    static Tree treeFromChars(char[] chars) {
+    @SuppressWarnings("unchecked")
+    private static Tree<String, Integer> treeFromChars(char[] chars) {
         if (chars.length == 0) {
-            return EMPTY_TREE;
+            return (Tree<String, Integer>) EMPTY_TREE;
         }
-        return treeFromChars(EMPTY_TREE, 0, chars);
+        return treeFromChars((Tree<String, Integer>) EMPTY_TREE, 0, chars);
     }
 
-    static Tree treeFromChars(Tree t, int pos, char[] chars) {
+    private static Tree<String, Integer> treeFromChars(Tree<String, Integer> t, int pos, char[] chars) {
         String head = String.valueOf(chars[0]);
-        Tree newTree = t.insert(head, pos);
+        Tree<String, Integer> newTree = t.insert(head, pos);
         if (chars.length == 1) {
             return newTree;
         }
@@ -167,8 +205,8 @@ public class Tree {
     }
 
     public static void main(String[] args) {
-        Tree tree1 = new Tree("a", 1);
-        Tree tree2 = tree1.insert("b", 2);
+        Tree<String, Integer> tree1 = new Tree<>("a", 1);
+        Tree<String, Integer> tree2 = tree1.insert("b", 2);
         System.out.println(String.format("a is in Tree1? expected:  true, actual: %5b", tree1.member("a")));
         System.out.println(String.format("c is in Tree2? expected: false, actual: %5b", tree2.member("c")));
         System.out.println(String.format("b is in Tree2? expected:  true, actual: %5b", tree2.member("b")));
