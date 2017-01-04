@@ -1,0 +1,3 @@
+# Override line-ending defaults
+* text=auto
+*.bat text eol=crlf

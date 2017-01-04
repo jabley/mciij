@@ -27,7 +27,7 @@ class AssignStm extends Stm {
      exp=e;
    }
    Table eval(Table t) {
-     return new Table(id, exp.eval( t).i, t);
+     return new SlotTable(id, exp.eval(t).i, t);
    }
    int maxargs() {
      return exp.maxargs();
@@ -131,8 +131,8 @@ abstract class ExpList {
   abstract int numargs();
   abstract int maxargs();
 
-  void print(int value) {
-    System.out.println(value);
+  void print(Table t, int value) {
+    t.print(value);
   }
 }
 
@@ -145,7 +145,7 @@ class PairExpList extends ExpList {
    }
    Table printAndEval(Table t) {
      IntAndTable res = head.eval(t);
-     print(res.i);
+     print(res.t, res.i);
      return tail.printAndEval(res.t);
    }
    int numargs() {
@@ -163,7 +163,7 @@ class LastExpList extends ExpList {
    }
    Table printAndEval(Table t) {
      IntAndTable res = head.eval(t);
-     print(res.i);
+     print(res.t, res.i);
      return res.t;
    }
    int numargs() {

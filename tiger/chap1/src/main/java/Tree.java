@@ -21,6 +21,9 @@ public class Tree<K extends Comparable<K>, V> {
     }
 
     protected Tree(Color color, K key, V binding, Tree<K, V> left, Tree<K ,V> right) {
+        if (key == null) {
+            throw new IllegalArgumentException("key == null");
+        }
         this.color = color;
         this.key = key;
         this.binding = binding;
@@ -28,7 +31,7 @@ public class Tree<K extends Comparable<K>, V> {
         this.right = right;
     }
 
-    private static final Tree EMPTY_TREE = new Tree<String, Object>(Color.RED, null, null, null, null) {
+    private static final Tree EMPTY_TREE = new Tree<String, Object>(Color.RED, "ignore", null, null, null) {
         @Override
         public int height() {
             return 0;
@@ -174,7 +177,7 @@ public class Tree<K extends Comparable<K>, V> {
         return true;
     }
 
-    private static Tree<String, Integer> treeFromString(String input) {
+    static Tree<String, Integer> treeFromString(String input) {
         if (input == null) {
             throw new IllegalArgumentException("input == null");
         }
@@ -203,23 +206,4 @@ public class Tree<K extends Comparable<K>, V> {
         int right = this.right.height();
         return 1 + Math.max(left, right);
     }
-
-    public static void main(String[] args) {
-        Tree<String, Integer> tree1 = new Tree<>("a", 1);
-        Tree<String, Integer> tree2 = tree1.insert("b", 2);
-        System.out.println(String.format("a is in Tree1? expected:  true, actual: %5b", tree1.member("a")));
-        System.out.println(String.format("c is in Tree2? expected: false, actual: %5b", tree2.member("c")));
-        System.out.println(String.format("b is in Tree2? expected:  true, actual: %5b", tree2.member("b")));
-        System.out.println(String.format("a is in Tree2? expected:  true, actual: %5b", tree2.member("a")));
-        System.out.println(String.format("b is in Tree1? expected: false, actual: %5b", tree1.member("b")));
-        System.out.println();
-        System.out.println(String.format("Value of c in Tree2? expected: null, actual: %4s", tree2.lookup("c")));
-        System.out.println(String.format("Value of b in Tree2? expected:    2, actual: %4s", tree2.lookup("b")));
-        System.out.println(String.format("Value of a in Tree2? expected:    1, actual: %4s", tree2.lookup("a")));
-        System.out.println(String.format("Value of b in Tree1? expected: null, actual: %4s", tree1.lookup("b")));
-        System.out.println();
-        System.out.println(String.format("Height of tspipfbst: expected: 4; actual: %s", treeFromString("tspipfbst").height()));
-        System.out.println(String.format("Height of abcdefghi: expected: 4; actual: %s", treeFromString("abcdefghi").height()));
-    }
-
 }
